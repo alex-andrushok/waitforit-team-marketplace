@@ -1,0 +1,10 @@
+{
+  "name": "hello",
+  "description": "Demo plugin with a single /hello slash command — a template to copy from",
+  "version": "1.0.0",
+  "author": {
+    "name": "o.andrushok",
+    "email": "andrushoka@gmail.com"
+  },
+  "license": "MIT"
+}
