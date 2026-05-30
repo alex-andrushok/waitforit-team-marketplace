@@ -7,15 +7,12 @@
     "name": "o.andrushok",
     "email": "andrushoka@gmail.com"
   },
-  "metadata": {
-    "pluginRoot": "./plugins"
-  },
   "plugins": [
     {
       "name": "hello",
       "displayName": "Hello",
       "description": "Demo plugin with a single /hello slash command — a template to copy from",
-      "source": "./hello",
+      "source": "./plugins/hello",
       "version": "1.0.0",
       "author": {
         "name": "o.andrushok",
