@@ -1,0 +1,29 @@
+{
+  "$schema": "https://code.claude.com/schemas/marketplace.json",
+  "name": "waitforit-team-marketplace",
+  "description": "Internal Claude Code plugin marketplace for the WaitForIt team",
+  "version": "1.0.0",
+  "owner": {
+    "name": "o.andrushok",
+    "email": "andrushoka@gmail.com"
+  },
+  "metadata": {
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "hello",
+      "displayName": "Hello",
+      "description": "Demo plugin with a single /hello slash command — a template to copy from",
+      "source": "./hello",
+      "version": "1.0.0",
+      "author": {
+        "name": "o.andrushok",
+        "email": "andrushoka@gmail.com"
+      },
+      "license": "MIT",
+      "keywords": ["demo", "template"],
+      "category": "examples"
+    }
+  ]
+}

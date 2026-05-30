@@ -1,0 +1,130 @@
+name: validate-plugins
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".claude-plugin/**"
+      - "plugins/**"
+      - ".github/workflows/validate-plugins.yml"
+  pull_request:
+    paths:
+      - ".claude-plugin/**"
+      - "plugins/**"
+      - ".github/workflows/validate-plugins.yml"
+
+jobs:
+  plugin-validate:
+    name: Validate marketplace and plugins
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate marketplace.json and plugin manifests
+        run: |
+          python3 - <<'PY'
+          import json, os, sys
+
+          errors = []
+
+          def load_json(path):
+              with open(path) as f:
+                  return json.load(f)
+
+          mp_path = ".claude-plugin/marketplace.json"
+          if not os.path.isfile(mp_path):
+              print(f"::error::{mp_path} not found")
+              sys.exit(1)
+
+          try:
+              mp = load_json(mp_path)
+          except json.JSONDecodeError as e:
+              print(f"::error file={mp_path}::Invalid JSON: {e}")
+              sys.exit(1)
+
+          for field in ("name", "owner", "plugins"):
+              if field not in mp:
+                  errors.append(f"{mp_path}: missing required field '{field}'")
+
+          owner = mp.get("owner")
+          if isinstance(owner, dict) and "name" not in owner:
+              errors.append(f"{mp_path}: owner.name is required")
+
+          plugin_root = (mp.get("metadata") or {}).get("pluginRoot", ".")
+          plugins = mp.get("plugins") or []
+          seen = set()
+
+          required_keys = {
+              "github": ["repo"],
+              "url": ["url"],
+              "git-subdir": ["url", "path"],
+              "npm": ["package"],
+          }
+
+          for i, p in enumerate(plugins):
+              label = p.get("name", f"#{i}")
+
+              if "name" not in p:
+                  errors.append(f"plugin {label}: missing 'name'")
+              name = p.get("name")
+              if name in seen:
+                  errors.append(f"plugin {label}: duplicate plugin name")
+              seen.add(name)
+
+              if "source" not in p:
+                  errors.append(f"plugin {label}: missing 'source'")
+                  continue
+              src = p["source"]
+
+              if isinstance(src, str):
+                  resolved = os.path.normpath(os.path.join(plugin_root, src))
+                  if resolved.startswith(".."):
+                      errors.append(f"plugin {label}: source '{src}' escapes repo root")
+                      continue
+                  if not os.path.isdir(resolved):
+                      errors.append(f"plugin {label}: source dir '{resolved}' not found")
+                      continue
+                  manifest = os.path.join(resolved, ".claude-plugin", "plugin.json")
+                  if not os.path.isfile(manifest):
+                      errors.append(f"plugin {label}: missing manifest {manifest}")
+                      continue
+                  try:
+                      pj = load_json(manifest)
+                  except json.JSONDecodeError as e:
+                      errors.append(f"plugin {label}: invalid JSON in {manifest}: {e}")
+                      continue
+                  if pj.get("name") != name:
+                      errors.append(
+                          f"plugin {label}: name mismatch "
+                          f"(marketplace='{name}', plugin.json='{pj.get('name')}')"
+                      )
+              elif isinstance(src, dict):
+                  kind = src.get("source")
+                  if kind not in required_keys:
+                      errors.append(f"plugin {label}: unknown source type '{kind}'")
+                  else:
+                      for key in required_keys[kind]:
+                          if key not in src:
+                              errors.append(
+                                  f"plugin {label}: source type '{kind}' missing '{key}'"
+                              )
+              else:
+                  errors.append(f"plugin {label}: source must be a string or object")
+
+          for dirpath, _dirs, files in os.walk("plugins"):
+              if os.path.basename(dirpath) == ".claude-plugin" and "plugin.json" in files:
+                  path = os.path.join(dirpath, "plugin.json")
+                  try:
+                      load_json(path)
+                  except json.JSONDecodeError as e:
+                      errors.append(f"{path}: invalid JSON: {e}")
+
+          if errors:
+              for e in errors:
+                  print(f"::error::{e}")
+              print(f"\n❌ {len(errors)} validation error(s)")
+              sys.exit(1)
+
+          print(f"✅ marketplace.json + {len(plugins)} plugin(s) valid")
+          PY
