@@ -1,0 +1,10 @@
+{
+  "name": "waitforit-arch",
+  "description": "Архітектурний інструментарій для Go-сервісу waitforit (DDD/Hexagonal modular monolith): планування вертикальних зрізів, перевірка меж залежностей, гайди по bounded-context і Go-хуки форматування/верифікації",
+  "version": "1.0.0",
+  "author": {
+    "name": "o.andrushok",
+    "email": "andrushoka@gmail.com"
+  },
+  "license": "MIT"
+}
