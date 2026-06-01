@@ -21,6 +21,20 @@
       "license": "MIT",
       "keywords": ["demo", "template"],
       "category": "examples"
+    },
+    {
+      "name": "waitforit-arch",
+      "displayName": "WaitForIt Architecture",
+      "description": "Архітектурний інструментарій для Go-сервісу waitforit: планування вертикальних зрізів, перевірка меж залежностей, гайди по bounded-context і Go-хуки форматування/верифікації",
+      "source": "./plugins/waitforit-arch",
+      "version": "1.0.0",
+      "author": {
+        "name": "o.andrushok",
+        "email": "andrushoka@gmail.com"
+      },
+      "license": "MIT",
+      "keywords": ["go", "ddd", "hexagonal", "architecture", "waitforit"],
+      "category": "internal"
     }
   ]
 }
